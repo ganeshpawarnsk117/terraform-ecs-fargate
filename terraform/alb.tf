@@ -1,14 +1,27 @@
 # alb.tf
 
 resource "aws_alb" "main" {
-  name            = "cb-load-balancer"
+  name            = "brevistay-stage-load-balancer"
   subnets         = aws_subnet.public.*.id
   security_groups = [aws_security_group.lb.id]
+
 }
 
+resource "aws_alb_listener" "main" {
+  load_balancer_arn = aws_alb.main.arn
+  port              = "80"
+  protocol          = "HTTP"
+  #ssl_policy        = "ELBSecurityPolicy-2016-08"
+  #certificate_arn   = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.app.arn
+  }
+}
 resource "aws_alb_target_group" "app" {
-  name        = "cb-target-group"
-  port        = 80
+  name        = "brevistay-stage-target-group"
+  port        = 3003
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
@@ -25,7 +38,7 @@ resource "aws_alb_target_group" "app" {
 }
 
 # Redirect all traffic from the ALB to the target group
-resource "aws_alb_listener" "front_end" {
+/* resource "aws_alb_listener" "front_end" {
   load_balancer_arn = aws_alb.main.id
   port              = var.app_port
   protocol          = "HTTP"
@@ -34,5 +47,5 @@ resource "aws_alb_listener" "front_end" {
     target_group_arn = aws_alb_target_group.app.id
     type             = "forward"
   }
-}
+} */
 
